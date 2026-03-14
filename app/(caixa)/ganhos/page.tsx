@@ -1,5 +1,8 @@
+import { columns, Ganho } from "./columns";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar"
+import { DataTable } from "@/components/data-table";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,7 +18,34 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-export default function Page() {
+async function fetchGanhos(): Promise<Ganho[]> {
+  return [
+    {
+      id: 1,
+      pessoa: "Luana",
+      data: new Date(2026, 4, 1),
+      valor: 4000,
+      tipo: "salario",
+    },
+    {
+      id: 2,
+      pessoa: "Gabriel",
+      data: new Date(2026, 4, 1),
+      valor: 4200,
+      tipo: "salario",
+    },
+    {
+      id: 3,
+      pessoa: "Luana",
+      data: new Date(2026, 4, 20),
+      valor: 4400,
+      tipo: "salario",
+    },
+  ]
+}
+
+export default async function Page() {
+  const ganhos = await fetchGanhos()
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -49,8 +79,10 @@ export default function Page() {
             <ThemeToggle />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          Ganhos
+        <div className="flex p-4">
+          <div className="container mx-auto py-10">
+            <DataTable columns={columns} data={ganhos} />
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
