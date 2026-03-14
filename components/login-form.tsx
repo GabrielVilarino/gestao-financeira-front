@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
+import { Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -121,14 +122,12 @@ export function LoginForm({
               <Field>
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? "Entrando..." : "Login"}
-                </Button>
-                <Button variant="secondary" type="button">
-                  Login com Google
+                  {isLoading && <Loader className="ml-2 animate-spin" />}
                 </Button>
                 <FieldDescription className="text-center">
                   Não tem uma conta?{" "}
                   <a href="#" className="hover:underline cursor-pointer">
-                    Cadastre-se
+                    Solicite Cadastro Aqui
                   </a>
                 </FieldDescription>
               </Field>
