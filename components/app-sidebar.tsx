@@ -4,7 +4,7 @@ import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 import {
-  SquareTerminal,
+  Wallet,
   ChartBar
 } from "lucide-react"
 
@@ -42,8 +42,8 @@ const data = {
     {
       title: "Caixa",
       url: "#",
-      icon: SquareTerminal,
-      isActive: true,
+      icon: Wallet,
+      isActive: false,
       items: [
         {
           title: "Ganhos",
@@ -52,6 +52,10 @@ const data = {
         {
           title: "Despesas",
           url: "/despesas",
+        },
+        {
+          title: "Metas",
+          url: "/metas",
         },
       ],
     },
