@@ -1,12 +1,10 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
 } from "lucide-react"
 
 import {
@@ -29,6 +27,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { Button } from "./ui/button"
 
 export function NavUser({
   user,
@@ -40,6 +39,16 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+
+  const router = useRouter()
+
+  function handleLogout() {
+    router.push("/")
+  }
+
+  function handleProfile() {
+    router.push("/user/1")
+  }
 
   return (
     <SidebarMenu>
@@ -82,29 +91,18 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
+                <Button variant={null} onClick={handleProfile}>
+                  <BadgeCheck />
+                  Perfil
+                </Button>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <LogOut />
-              Log out
+              <Button variant={null} onClick={handleLogout}>
+                <LogOut />
+                Sair
+              </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

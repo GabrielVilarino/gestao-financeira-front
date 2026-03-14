@@ -2,7 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { useTheme } from "../hooks/useTheme";
+import { useTheme } from "../app/hooks/use-theme";
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
