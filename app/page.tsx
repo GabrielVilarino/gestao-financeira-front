@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/login-form";
-import { ThemeToggle } from "./components/ThemeToggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   return (
