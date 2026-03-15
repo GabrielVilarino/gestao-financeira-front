@@ -28,24 +28,86 @@ async function fetchDespesasFixas(): Promise<DespesaFixa[]> {
     {
       id: 1,
       pessoa: "Gabriel e Luana",
-      data: new Date(2026, 4, 10),
+      data: new Date(2026, 3, 10),
       valor: 2770,
       categoria: "aluguel",
+      tipo: "fixa",
     },
     {
       id: 2,
       pessoa: "Gabriel e Luana",
-      data: new Date(2026, 4, 10),
+      data: new Date(2026, 3, 10),
       valor: 100,
       categoria: "internet",
+      tipo: "fixa",
     },
     {
       id: 3,
       pessoa: "Gabriel e Luana",
-      data: new Date(2026, 4, 10),
+      data: new Date(2026, 3, 10),
       valor: 4400,
       categoria: "assinaturas",
+      tipo: "fixa",
     },
+    {
+      id: 4,
+      pessoa: "Gabriel e Luana",
+      data: new Date(2026, 3, 10),
+      valor: 500,
+      categoria: "caucao",
+      tipo: "parcelada",
+    },
+    {
+      id: 5,
+      pessoa: "Gabriel e Luana",
+      data: new Date(2026, 3, 1),
+      dataTermino: new Date(2026, 10, 1),
+      valor: 264,
+      categoria: "casa",
+      subCategoria: "geladeira",
+      tipo: "parcelada",
+    },
+    {
+      id: 6,
+      pessoa: "Gabriel e Luana",
+      data: new Date(2026, 3, 1),
+      dataTermino: new Date(2026, 11, 1),
+      valor: 244.5,
+      categoria: "casa",
+      subCategoria: "cama",
+      tipo: "parcelada",
+    },
+    {
+      id: 7,
+      pessoa: "Gabriel e Luana",
+      data: new Date(2026, 3, 1),
+      dataTermino: new Date(2026, 7, 1),
+      valor: 225,
+      categoria: "casa",
+      subCategoria: "bebedouro",
+      tipo: "parcelada",
+    },
+    {
+      id: 8,
+      pessoa: "Gabriel e Luana",
+      data: new Date(2026, 3, 1),
+      dataTermino: new Date(2026, 5, 1),
+      valor: 190,
+      categoria: "casa",
+      subCategoria: "colchão",
+      tipo: "parcelada",
+    },
+    {
+      id: 9,
+      pessoa: "Luana",
+      data: new Date(2026, 3, 1),
+      dataTermino: new Date(2026, 6, 1),
+      valor: 375,
+      categoria: "outros",
+      subCategoria: "celular",
+      tipo: "parcelada",
+    },
+
   ]
 }
 
@@ -164,7 +226,7 @@ export default async function Page() {
         </header>
         <div className="flex flex-col p-4 mr-2 gap-4 overflow-y-auto max-h-[calc(100vh-5rem)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-primary [&::-webkit-scrollbar-thumb]:rounded-full">
           <div className="flex flex-col gap-4">
-            <h1><b>Despesas Fixas</b></h1>
+            <h1><b>Despesas Fixas/Parceladas</b></h1>
             <div className="container mx-auto">
               <DataTable columns={columnsFixa} data={despesasFixas} />
             </div>

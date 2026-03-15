@@ -6,6 +6,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { 
   MoreHorizontal,
   ArrowUpDown,
+  Dice1,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -36,13 +37,17 @@ export const columns: ColumnDef<Ganho>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0"
+          className="w-full justify-center"
         >
           Pessoa
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
+    cell: ({ row }) => {
+      const pessoa = row.getValue("pessoa") as string
+      return <div className="w-full flex justify-center">{pessoa}</div>
+    }
   },
   {
     accessorKey: "data",
@@ -51,7 +56,7 @@ export const columns: ColumnDef<Ganho>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0"
+          className="w-full justify-center"
         >
           Data de Recebimento
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -60,11 +65,16 @@ export const columns: ColumnDef<Ganho>[] = [
     },
     cell: ({ row }) => {
       const data = row.getValue("data") as Date
-      return new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }).format(data)
+
+      return (
+        <div className="w-full flex justify-center">
+          {new Intl.DateTimeFormat("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }).format(data)}
+        </div>
+      )
     },
   },
   {
@@ -73,7 +83,7 @@ export const columns: ColumnDef<Ganho>[] = [
       return (
         <Button
           variant="ghost"
-          className="p-0 hover:cursor-default hover:bg-transparent"
+          className="w-full justify-center hover:cursor-default hover:bg-transparent"
         >
           Valor Recebido
         </Button>
@@ -81,10 +91,14 @@ export const columns: ColumnDef<Ganho>[] = [
     },
     cell: ({ row }) => {
       const valor = row.getValue("valor") as number
-      return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(valor)
+      return (
+        <div className="w-full flex justify-center">
+          {new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }).format(valor)}
+        </div>
+      )
     },
   },
   {
@@ -93,7 +107,7 @@ export const columns: ColumnDef<Ganho>[] = [
       return (
         <Button
           variant="ghost"
-          className="p-0 hover:cursor-default hover:bg-transparent"
+          className="w-full justify-center hover:cursor-default hover:bg-transparent"
         >
           Tipo
         </Button>
@@ -101,7 +115,7 @@ export const columns: ColumnDef<Ganho>[] = [
     },
     cell: ({ row }) => {
       const tipo = row.getValue("tipo") as string
-      return tipo.charAt(0).toUpperCase() + tipo.slice(1)
+      return <div className="w-full flex justify-center">{tipo.charAt(0).toUpperCase() + tipo.slice(1)}</div>
     },
   },
   {
