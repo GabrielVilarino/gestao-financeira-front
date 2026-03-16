@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Loader } from "lucide-react";
@@ -22,58 +22,68 @@ import {
 import { Input } from "@/components/ui/input";
 
 const loginSchema = z.object({
-  username: z.string().min(3, "Usuário deve ter no mínimo 3 caracteres!"),
-  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres!"),
+  email: z.string().min(3, "Usuário deve ter no mínimo 3 caracteres!"),
+  senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres!"),
 });
 
 type LoginData = z.infer<typeof loginSchema>;
-
-const MOCK_USER = {
-  username: "admin",
-  password: "123456",
-};
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   function clearForm() {
-    setUsername("");
-    setPassword("");
+    setEmail("");
+    setSenha("");
     setError("");
     setIsLoading(false);
   }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
-      const data: LoginData = { username, password };
+      const data: LoginData = { email, senha };
       loginSchema.parse(data);
 
-      if (username === MOCK_USER.username && password === MOCK_USER.password) {
-        clearForm();
-        router.push("/home");
-      } else {
-        setError("Usuário ou senha inválidos");
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro ao realizar login");
       }
+
+      clearForm();
+      router.push("/home");
     } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.issues[0].message);
-      } else {
-        setError("Erro ao realizar login");
+      }else if (err instanceof Error) {
+        setError(err.message);
       }
+
     } finally {
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    
+  }, []);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -81,20 +91,20 @@ export function LoginForm({
         <CardHeader>
           <CardTitle>Entre com a sua conta</CardTitle>
           <CardDescription>
-            Insira seu usuário abaixo para acessar sua conta
+            Insira seu email abaixo para acessar sua conta
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="username">Usuário</FieldLabel>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="Digite seu usuário"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="Digite seu email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </Field>
@@ -111,8 +121,8 @@ export function LoginForm({
                 <Input
                   id="password"
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
                   required
                 />
               </Field>

@@ -42,8 +42,27 @@ export function NavUser({
 
   const router = useRouter()
 
-  function handleLogout() {
-    router.push("/")
+  async function handleLogout() {
+
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro ao realizar logout");
+      }
+
+      router.push("/");
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(err.message);
+      }
+    } 
   }
 
   function handleProfile() {
