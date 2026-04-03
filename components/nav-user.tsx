@@ -52,6 +52,11 @@ export function NavUser({
         }
       });
 
+      if (response.status === 401) {
+        router.push("/");
+        return;
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Erro ao realizar logout");
