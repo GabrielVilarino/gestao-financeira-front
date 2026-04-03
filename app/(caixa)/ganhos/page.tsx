@@ -1,4 +1,11 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"
+
 import { columns, Ganho } from "./columns";
+import { GanhoDialog, GanhoFormData } from "./ganho-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import formatDate from "@/functions/format-date";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar"
@@ -18,34 +25,163 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-async function fetchGanhos(): Promise<Ganho[]> {
-  return [
-    {
-      id: 1,
-      pessoa: "Luana",
-      data: new Date(2026, 4, 1),
-      valor: 4000,
-      tipo: "salario",
-    },
-    {
-      id: 2,
-      pessoa: "Gabriel",
-      data: new Date(2026, 4, 1),
-      valor: 4200,
-      tipo: "salario",
-    },
-    {
-      id: 3,
-      pessoa: "Luana",
-      data: new Date(2026, 4, 20),
-      valor: 4400,
-      tipo: "salario",
-    },
-  ]
-}
+import { Categorias, Subcategorias } from "./types";
 
-export default async function Page() {
-  const ganhos = await fetchGanhos()
+export default function Page() {
+  const [ganhos, setGanhos] = useState<Ganho[]>([]);
+  const [categorias, setCategorias] = useState<Categorias[]>([]);
+  const [subcategorias, setSubcategorias] = useState<Subcategorias[]>([]);
+
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editId, setEditId] = useState<number | undefined>();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | undefined>();
+
+  const router = useRouter();
+
+  function handleOpenAdd() {
+    setEditId(undefined);
+    setDialogOpen(true);
+  }
+
+  function handleOpenEdit(id: number) {
+    setEditId(id);
+    setDialogOpen(true);
+  }
+
+  function handleOpenDelete(id: number) {
+    setDeleteId(id);
+    setConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteId) return;
+    const response = await fetch(`/api/ganhos/delete/${deleteId}`, { method: "DELETE" });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao excluir ganho");
+    }
+
+    setDeleteId(undefined);
+    await fetchGanhos().then(setGanhos);
+  }
+
+  async function handleSubmit(data: GanhoFormData, id?: number) {
+    const isEditing = id !== undefined;
+    const url = isEditing ? "/api/ganhos/update" : "/api/ganhos/create";
+    const method = isEditing ? "PUT" : "POST";
+
+    const payload = isEditing ? { id, ...data } : { ...data };
+
+    const response = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao salvar ganho");
+    }
+
+    await fetchGanhos().then(setGanhos);
+  }
+
+  async function fetchGanhos(): Promise<Ganho[]> {
+    setIsLoading(true);
+    try {
+      const now = new Date();
+
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const start = formatDate(startDate);
+      const end = formatDate(endDate);
+
+      const response = await fetch(`/api/ganhos?data_inicio=${start}&data_fim=${end}`);
+
+      if (response.status === 401) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+
+        router.push("/");
+      }
+      const ganhos = await response.json();
+
+      return ganhos;
+    } catch (error) {
+      console.error("Erro ao buscar ganhos:", error);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function fetchCategorias(): Promise<Categorias[]> {
+    try {
+
+      const response = await fetch(`/api/categorias`);
+
+      if (response.status === 401) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+
+        router.push("/");
+      }
+      const categorias = await response.json();
+      return categorias;
+    } catch (error) {
+      console.error("Erro ao buscar categorias:", error);
+      return [];
+    }
+  }
+
+  async function fetchSubcategorias(): Promise<Subcategorias[]> {
+    try {
+      const response = await fetch(`/api/categorias/subcategorias`);
+
+      if (response.status === 401) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+
+        router.push("/");
+      }
+      const subcategorias = await response.json();
+
+      return subcategorias;
+    } catch (error) {
+      console.error("Erro ao buscar subcategorias:", error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    fetchGanhos().then(setGanhos);
+    fetchCategorias().then(setCategorias);
+    fetchSubcategorias().then(setSubcategorias);
+  }, [])
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -80,9 +216,57 @@ export default async function Page() {
           </div>
         </header>
         <div className="flex p-4">
-          <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={ganhos} />
-          </div>
+          {isLoading ? 
+            (
+              <div className="flex h-64 w-full items-center justify-center">
+                <span className="text-sm text-muted-foreground">Carregando ganhos...</span>
+              </div>
+            ) : !ganhos ? 
+            (
+              <div className="flex h-64 w-full items-center justify-center">
+                <span className="text-sm text-muted-foreground">Nenhum ganho encontrado.</span>
+              </div>
+            ) : ganhos?.length > 0 &&
+            (
+              <div className="container mx-auto py-10">
+                <DataTable
+                  columns={columns}
+                  data={ganhos}
+                  filterColumn="nome"
+                  filterPlaceholder="Filtrar por nome..."
+                  onAdd={handleOpenAdd}
+                  onEdit={handleOpenEdit}
+                  onDelete={handleOpenDelete}
+                  dialog={
+                    <>
+                      <GanhoDialog
+                        open={dialogOpen}
+                        onOpenChange={(open) => {
+                          setDialogOpen(open);
+                          if (!open) setEditId(undefined);
+                        }}
+                        id={editId}
+                        categorias={categorias}
+                        subcategorias={subcategorias}
+                        onSubmit={handleSubmit}
+                      />
+                      <ConfirmDialog
+                        open={confirmOpen}
+                        onOpenChange={(open) => {
+                          setConfirmOpen(open);
+                          if (!open) setDeleteId(undefined);
+                        }}
+                        title="Excluir ganho"
+                        description="Essa ação não pode ser desfeita. Deseja realmente excluir este ganho?"
+                        confirmLabel="Excluir"
+                        onConfirm={handleConfirmDelete}
+                      />
+                    </>
+                  }
+                />
+              </div>
+            )
+          }
         </div>
       </SidebarInset>
     </SidebarProvider>

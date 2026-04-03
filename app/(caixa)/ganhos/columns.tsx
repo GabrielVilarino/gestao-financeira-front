@@ -6,7 +6,6 @@ import { ColumnDef } from "@tanstack/react-table"
 import { 
   MoreHorizontal,
   ArrowUpDown,
-  Dice1,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,7 +20,7 @@ import {
 
 export const ganhoSchema = z.object({
   id: z.number().positive("ID deve ser positivo"),
-  pessoa: z.string().min(1, "Nome da pessoa é obrigatório"),
+  nome: z.string().min(1, "Nome da pessoa é obrigatório"),
   data: z.date(),
   valor: z.number().positive("Valor deve ser positivo"),
   tipo: z.enum(["salario", "outros"]),
@@ -31,7 +30,7 @@ export type Ganho = z.infer<typeof ganhoSchema>
 
 export const columns: ColumnDef<Ganho>[] = [
   {
-    accessorKey: "pessoa",
+    accessorKey: "nome",
     header: ({ column }) => {
       return (
         <Button
@@ -39,14 +38,14 @@ export const columns: ColumnDef<Ganho>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="w-full justify-center"
         >
-          Pessoa
+          Nome
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
     cell: ({ row }) => {
-      const pessoa = row.getValue("pessoa") as string
-      return <div className="w-full flex justify-center">{pessoa}</div>
+      const nome = row.getValue("nome") as string
+      return <div className="w-full flex justify-center">{nome}</div>
     }
   },
   {
@@ -64,11 +63,12 @@ export const columns: ColumnDef<Ganho>[] = [
       )
     },
     cell: ({ row }) => {
-      const data = row.getValue("data") as Date
+      const data = new Date(row.getValue("data") as string);
 
       return (
         <div className="w-full flex justify-center">
           {new Intl.DateTimeFormat("pt-BR", {
+            timeZone: "UTC",
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
@@ -115,12 +115,12 @@ export const columns: ColumnDef<Ganho>[] = [
     },
     cell: ({ row }) => {
       const tipo = row.getValue("tipo") as string
-      return <div className="w-full flex justify-center">{tipo.charAt(0).toUpperCase() + tipo.slice(1)}</div>
+      return <div className="w-full flex justify-center">{tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase()}</div>
     },
   },
   {
     id: "ações",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const ganho = row.original
  
       return (
@@ -134,8 +134,8 @@ export const columns: ColumnDef<Ganho>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="hover:cursor-pointer">Editar Ganho</DropdownMenuItem>
-            <DropdownMenuItem className="hover:cursor-pointer">Excluir Ganho</DropdownMenuItem>
+            <DropdownMenuItem className="hover:cursor-pointer" onSelect={() => table.options.meta?.onEditRow?.(ganho.id)}>Editar Ganho</DropdownMenuItem>
+            <DropdownMenuItem className="hover:cursor-pointer text-destructive focus:text-destructive" onSelect={() => table.options.meta?.onDeleteRow?.(ganho.id)}>Excluir Ganho</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )

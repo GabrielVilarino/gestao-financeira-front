@@ -1,10 +1,9 @@
 "use client"
 
-import * as React from "react"
-
 import {
   ColumnDef,
   ColumnFiltersState,
+  RowData,
   SortingState,
   VisibilityState,
   flexRender,
@@ -14,6 +13,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData extends RowData> {
+    onEditRow?: (id: number) => void
+    onDeleteRow?: (id: number) => void
+  }
+}
 
 import {
   Table,
@@ -33,21 +39,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import { useState } from "react"
+import { Plus } from "lucide-react"
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  filterColumn?: string
+  filterPlaceholder?: string
+  onAdd?: () => void
+  onEdit?: (id: number) => void
+  onDelete?: (id: number) => void
+  dialog?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  filterColumn = "nome",
+  filterPlaceholder = "Filtrar...",
+  onAdd,
+  onEdit,
+  onDelete,
+  dialog,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
     data,
@@ -64,16 +82,20 @@ export function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
     },
+    meta: {
+      onEditRow: onEdit,
+      onDeleteRow: onDelete,
+    },
   })
 
   return (
     <div>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filtro por pessoa..."
-          value={(table.getColumn("pessoa")?.getFilterValue() as string) ?? ""}
+          placeholder={filterPlaceholder}
+          value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("pessoa")?.setFilterValue(event.target.value)
+            table.getColumn(filterColumn)?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -86,9 +108,7 @@ export function DataTable<TData, TValue>({
           <DropdownMenuContent align="end">
             {table
               .getAllColumns()
-              .filter(
-                (column) => column.getCanHide()
-              )
+              .filter((column) => column.getCanHide())
               .map((column) => {
                 return (
                   <DropdownMenuCheckboxItem
@@ -150,24 +170,34 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Anterior
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Próxima
-        </Button>
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <div>
+          {onAdd && (
+            <Button onClick={onAdd}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Próxima
+          </Button>
+        </div>
       </div>
+      {dialog}
     </div>
   )
 }
