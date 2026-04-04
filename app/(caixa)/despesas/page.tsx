@@ -1,9 +1,11 @@
-import { 
-  columnsFixa,
-  DespesaFixa,
-  DespesaVariavel,
-  columnsVariavel
-} from "./columns";
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { columns, Despesa } from "./columns";
+import { DespesaDialog, DespesaFormData } from "./despesa-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import formatDate from "@/functions/format-date";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -23,174 +25,190 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-async function fetchDespesasFixas(): Promise<DespesaFixa[]> {
-  return [
-    {
-      id: 1,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 3, 10),
-      valor: 2770,
-      categoria: "aluguel",
-      tipo: "fixa",
-    },
-    {
-      id: 2,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 3, 10),
-      valor: 100,
-      categoria: "internet",
-      tipo: "fixa",
-    },
-    {
-      id: 3,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 3, 10),
-      valor: 4400,
-      categoria: "assinaturas",
-      tipo: "fixa",
-    },
-    {
-      id: 4,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 3, 10),
-      valor: 500,
-      categoria: "caucao",
-      tipo: "parcelada",
-    },
-    {
-      id: 5,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 3, 1),
-      dataTermino: new Date(2026, 10, 1),
-      valor: 264,
-      categoria: "casa",
-      subCategoria: "geladeira",
-      tipo: "parcelada",
-    },
-    {
-      id: 6,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 3, 1),
-      dataTermino: new Date(2026, 11, 1),
-      valor: 244.5,
-      categoria: "casa",
-      subCategoria: "cama",
-      tipo: "parcelada",
-    },
-    {
-      id: 7,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 3, 1),
-      dataTermino: new Date(2026, 7, 1),
-      valor: 225,
-      categoria: "casa",
-      subCategoria: "bebedouro",
-      tipo: "parcelada",
-    },
-    {
-      id: 8,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 3, 1),
-      dataTermino: new Date(2026, 5, 1),
-      valor: 190,
-      categoria: "casa",
-      subCategoria: "colchão",
-      tipo: "parcelada",
-    },
-    {
-      id: 9,
-      pessoa: "Luana",
-      data: new Date(2026, 3, 1),
-      dataTermino: new Date(2026, 6, 1),
-      valor: 375,
-      categoria: "outros",
-      subCategoria: "celular",
-      tipo: "parcelada",
-    },
+import { Categorias, Subcategorias } from "./types";
 
-  ]
-}
+export default function Page() {
+  const [despesas, setDespesas] = useState<Despesa[]>([]);
+  const [categorias, setCategorias] = useState<Categorias[]>([]);
+  const [subcategorias, setSubcategorias] = useState<Subcategorias[]>([]);
 
-async function fetchDespesasVariaveis(): Promise<DespesaVariavel[]> {
-  return [
-    {
-      id: 1,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 4, 6),
-      valor: 200,
-      categoria: "casa",
-      subCategoria: "energia",
-    },
-    {
-      id: 2,
-      pessoa: "Gabriel",
-      data: new Date(2026, 4, 1),
-      valor: 263.7,
-      categoria: "mercado",
-      subCategoria: "matheus",
-    },
-    {
-      id: 3,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 4, 10),
-      valor: 63.96,
-      categoria: "casa",
-      subCategoria: "lavanderia",
-    },
-    {
-      id: 4,
-      pessoa: "Luana",
-      data: new Date(2026, 4, 20),
-      valor: 40,
-      categoria: "mercado",
-      subCategoria: "armazem",
-    },
-    {
-      id: 5,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 4, 1),
-      valor: 72,
-      categoria: "lazer",
-      subCategoria: "feirinha",
-    },
-    {
-      id: 6,
-      pessoa: "Gabriel",
-      data: new Date(2026, 4, 1),
-      valor: 51.94,
-      categoria: "mercado",
-      subCategoria: "armazem",
-    },
-    {
-      id: 7,
-      pessoa: "Gabriel",
-      data: new Date(2026, 4, 1),
-      valor: 13,
-      categoria: "mercado",
-      subCategoria: "armazem",
-    },
-    {
-      id: 8,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 4, 1),
-      valor: 204.92,
-      categoria: "mercado",
-      subCategoria: "fribal",
-    },
-    {
-      id: 9,
-      pessoa: "Gabriel e Luana",
-      data: new Date(2026, 4, 1),
-      valor: 8.09,
-      categoria: "mercado",
-      subCategoria: "armazem",
-    },
-  ]
-}
+  const [isLoading, setIsLoading] = useState(false);
 
-export default async function Page() {
-  const despesasFixas = await fetchDespesasFixas()
-  const despesasVariaveis = await fetchDespesasVariaveis()
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editId, setEditId] = useState<number | undefined>();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | undefined>();
+
+  const router = useRouter();
+
+  function handleOpenAdd() {
+    setEditId(undefined);
+    setDialogOpen(true);
+  }
+
+  function handleOpenEdit(id: number) {
+    setEditId(id);
+    setDialogOpen(true);
+  }
+
+  function handleOpenDelete(id: number) {
+    setDeleteId(id);
+    setConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteId) return;
+    
+    const response = await fetch(`/api/despesas/delete/${deleteId}`, { method: "DELETE" });
+
+    if (response.status === 401) {
+      alert("Sessão expirada. Por favor, faça login novamente.");
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      router.push("/");
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao excluir despesa");
+    }
+
+    setDeleteId(undefined);
+    await fetchDespesas().then(setDespesas);
+  }
+
+  async function handleSubmit(data: DespesaFormData, id?: number) {
+    const isEditing = id !== undefined;
+    const url = isEditing ? "/api/despesas/update" : "/api/despesas/create";
+    const method = isEditing ? "PUT" : "POST";
+
+    const payload = isEditing ? { id, ...data } : { ...data };
+
+    const response = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.status === 401) {
+      alert("Sessão expirada. Por favor, faça login novamente.");
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      router.push("/");
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao salvar despesa");
+    }
+
+    await fetchDespesas().then(setDespesas);
+  }
+
+  async function fetchDespesas(): Promise<Despesa[]> {
+    setIsLoading(true);
+    try {
+      const now = new Date();
+
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const start = formatDate(startDate);
+      const end = formatDate(endDate);
+
+      const response = await fetch(`/api/despesas?data_inicio=${start}&data_fim=${end}`);
+
+      if (response.status === 401) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        router.push("/");
+      }
+
+      const despesas = await response.json();
+      return despesas;
+    } catch (error) {
+      console.error("Erro ao buscar despesas:", error);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function fetchCategorias(): Promise<Categorias[]> {
+    try {
+      const response = await fetch(`/api/categorias?tipo=despesa`);
+
+      if (response.status === 401) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        router.push("/");
+      }
+
+      const categorias = await response.json();
+      return categorias;
+    } catch (error) {
+      console.error("Erro ao buscar categorias:", error);
+      return [];
+    }
+  }
+
+  async function fetchSubcategorias(): Promise<Subcategorias[]> {
+    try {
+      const response = await fetch(`/api/categorias/subcategorias`);
+
+      if (response.status === 401) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        router.push("/");
+      }
+
+      const subcategorias = await response.json();
+      return subcategorias;
+    } catch (error) {
+      console.error("Erro ao buscar subcategorias:", error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    fetchDespesas().then(setDespesas);
+    fetchCategorias().then(setCategorias);
+    fetchSubcategorias().then(setSubcategorias);
+  }, []);
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -224,21 +242,62 @@ export default async function Page() {
             <ThemeToggle />
           </div>
         </header>
-        <div className="flex flex-col p-4 mr-2 gap-4 overflow-y-auto max-h-[calc(100vh-5rem)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-primary [&::-webkit-scrollbar-thumb]:rounded-full">
-          <div className="flex flex-col gap-4">
-            <h1><b>Despesas Fixas/Parceladas</b></h1>
-            <div className="container mx-auto">
-              <DataTable columns={columnsFixa} data={despesasFixas} />
-            </div>
-          </div>
-          <div className="flex flex-col gap-4">
-            <h1><b>Despesas Variáveis</b></h1>
-            <div className="container mx-auto">
-              <DataTable columns={columnsVariavel} data={despesasVariaveis} />
-            </div>
-          </div>
+        <div className="flex p-4">
+          {isLoading ?
+            (
+              <div className="flex h-64 w-full items-center justify-center">
+                <span className="text-sm text-muted-foreground">Carregando despesas...</span>
+              </div>
+            ) : !despesas ?
+            (
+              <div className="flex h-64 w-full items-center justify-center">
+                <span className="text-sm text-muted-foreground">Nenhuma despesa encontrada.</span>
+              </div>
+            ) : despesas?.length > 0 &&
+            (
+              <div className="container mx-auto py-10">
+                <DataTable
+                  columns={columns}
+                  data={despesas}
+                  filterColumn="nome"
+                  filterPlaceholder="Filtrar por nome..."
+                  onAdd={handleOpenAdd}
+                  onEdit={handleOpenEdit}
+                  onDelete={handleOpenDelete}
+                  dialog={
+                    <>
+                      <DespesaDialog
+                        open={dialogOpen}
+                        onOpenChange={(open) => {
+                          setDialogOpen(open);
+                          if (!open) setEditId(undefined);
+                        }}
+                        id={editId}
+                        categorias={categorias}
+                        subcategorias={subcategorias}
+                        onSubmit={handleSubmit}
+                      />
+                      <ConfirmDialog
+                        open={confirmOpen}
+                        onOpenChange={(open) => {
+                          setConfirmOpen(open);
+                          if (!open) setDeleteId(undefined);
+                        }}
+                        title="Excluir despesa"
+                        description="Essa ação não pode ser desfeita. Deseja realmente excluir esta despesa?"
+                        confirmLabel="Excluir"
+                        onConfirm={handleConfirmDelete}
+                      />
+                    </>
+                  }
+                />
+              </div>
+            )
+          }
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
+
+

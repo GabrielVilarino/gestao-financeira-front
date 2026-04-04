@@ -21,69 +21,71 @@ import {
 import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 
-import { Categorias, GanhoDetalhe, Subcategorias } from "./types"
+import { Categorias, DespesaDetalhe, Subcategorias } from "./types"
 
 // == Schema de validação == //
-const ganhoFormSchema = z.object({
+const despesaFormSchema = z.object({
   id_categoria: z.number({ error: "Categoria é obrigatória" }).int().positive("Categoria inválida"),
   id_subcategoria: z.number().int().positive("Subcategoria inválida").optional(),
-  tipo_transacao: z.enum(["fixa", "variavel"] as const, { error: "Tipo de transação é obrigatório" }),
+  tipo_transacao: z.enum(["fixa", "variavel", "parcelado"] as const, { error: "Tipo de transação é obrigatório" }),
   valor: z.number({ error: "Valor é obrigatório" }).positive("Valor deve ser positivo"),
-  data_recebimento: z.string().min(1, "Data de recebimento é obrigatória"),
+  data_pagamento: z.string().min(1, "Data de pagamento é obrigatória"),
+  data_ultimo_pagamento: z.string().optional(),
 })
 
-export type GanhoFormData = z.infer<typeof ganhoFormSchema>
+export type DespesaFormData = z.infer<typeof despesaFormSchema>
 
-interface GanhoDialogProps {
+interface DespesaDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   id?: number
   categorias?: Categorias[]
   subcategorias?: Subcategorias[]
-  onSubmit: (data: GanhoFormData, id?: number) => Promise<void>
+  onSubmit: (data: DespesaFormData, id?: number) => Promise<void>
 }
 
-const INITIAL_FORM: GanhoFormData = {
+const INITIAL_FORM: DespesaFormData = {
   id_categoria: 0,
   id_subcategoria: undefined,
   tipo_transacao: "fixa",
   valor: 0,
-  data_recebimento: "",
+  data_pagamento: "",
+  data_ultimo_pagamento: undefined,
 }
 
-async function fetchGanhoDetalhe(id: number): Promise<GanhoFormData> {
-  const res = await fetch(`/api/ganhos/${id}`)
-  const data: GanhoDetalhe = await res.json()
+async function fetchDespesaDetalhe(id: number): Promise<DespesaFormData> {
+  const res = await fetch(`/api/despesas/${id}`)
+  const data: DespesaDetalhe = await res.json()
+
   return {
     id_categoria: data.id_categoria,
     id_subcategoria: data.id_subcategoria ?? undefined,
     tipo_transacao: data.tipo_transacao,
     valor: data.valor,
-    data_recebimento: data.data_recebimento.slice(0, 10),
+    data_pagamento: data.data_pagamento.slice(0, 10),
+    data_ultimo_pagamento: data.data_ult_pagamento ? data.data_ult_pagamento.slice(0, 10) : undefined,
   }
 }
 
-export function GanhoDialog({
+export function DespesaDialog({
   open,
   onOpenChange,
   id,
   categorias = [],
   subcategorias = [],
   onSubmit,
-}: GanhoDialogProps) {
+}: DespesaDialogProps) {
   const isEditing = id !== undefined
 
-  const [form, setForm] = useState<GanhoFormData>(INITIAL_FORM)
-  const [errors, setErrors] = useState<Partial<Record<keyof GanhoFormData, string>>>({})
+  const [form, setForm] = useState<DespesaFormData>(INITIAL_FORM)
+  const [errors, setErrors] = useState<Partial<Record<keyof DespesaFormData, string>>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
 
-  // Subcategorias filtradas pela categoria selecionada
   const subcategoriasFiltradas = subcategorias.filter(
     (s) => s.id_categoria === form.id_categoria
   )
 
-  // Limpa ou popula o formulário ao abrir/fechar
   useEffect(() => {
     if (!open) {
       setForm(INITIAL_FORM)
@@ -94,13 +96,13 @@ export function GanhoDialog({
     if (!id) return
 
     setIsFetching(true)
-    fetchGanhoDetalhe(id)
+    fetchDespesaDetalhe(id)
       .then(setForm)
       .catch(() => {})
       .finally(() => setIsFetching(false))
   }, [open, id])
 
-  function setField<K extends keyof GanhoFormData>(key: K, value: GanhoFormData[K]) {
+  function setField<K extends keyof DespesaFormData>(key: K, value: DespesaFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
     setErrors((prev) => ({ ...prev, [key]: undefined }))
   }
@@ -109,15 +111,15 @@ export function GanhoDialog({
     e.preventDefault()
     setErrors({})
 
-    const result = ganhoFormSchema.safeParse({
+    const result = despesaFormSchema.safeParse({
       ...form,
       id_subcategoria: form.id_subcategoria || undefined,
     })
 
     if (!result.success) {
-      const fieldErrors: Partial<Record<keyof GanhoFormData, string>> = {}
+      const fieldErrors: Partial<Record<keyof DespesaFormData, string>> = {}
       result.error.issues.forEach((issue) => {
-        const key = issue.path[0] as keyof GanhoFormData
+        const key = issue.path[0] as keyof DespesaFormData
         if (!fieldErrors[key]) fieldErrors[key] = issue.message
       })
       setErrors(fieldErrors)
@@ -139,7 +141,7 @@ export function GanhoDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100%-2rem)] max-w-md sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Editar Ganho" : "Novo Ganho"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Editar Despesa" : "Nova Despesa"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} noValidate aria-busy={isFetching}>
@@ -207,7 +209,7 @@ export function GanhoDialog({
               <Select
                 value={form.tipo_transacao}
                 onValueChange={(val) =>
-                  setField("tipo_transacao", val as "fixa" | "variavel")
+                  setField("tipo_transacao", val as "fixa" | "variavel" | "parcelado")
                 }
               >
                 <SelectTrigger className="w-full">
@@ -216,6 +218,7 @@ export function GanhoDialog({
                 <SelectContent>
                   <SelectItem value="fixa">Fixa</SelectItem>
                   <SelectItem value="variavel">Variável</SelectItem>
+                  <SelectItem value="parcelado">Parcelado</SelectItem>
                 </SelectContent>
               </Select>
               {errors.tipo_transacao && (
@@ -223,34 +226,48 @@ export function GanhoDialog({
               )}
             </Field>
 
-            {/* Valor + Data em linha no desktop */}
+            {/* Valor */}
+            <Field>
+              <FieldLabel>Valor (R$)</FieldLabel>
+              <Input
+                type="number"
+                min={0}
+                step={0.01}
+                placeholder="0,00"
+                value={form.valor || ""}
+                onChange={(e) => setField("valor", parseFloat(e.target.value) || 0)}
+              />
+              {errors.valor && (
+                <p className="text-xs text-destructive">{errors.valor}</p>
+              )}
+            </Field>
+
+            {/* Data Pagamento + Data Último Pagamento em linha no desktop */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              {/* Valor */}
               <Field>
-                <FieldLabel>Valor (R$)</FieldLabel>
+                <FieldLabel>Data de Pagamento</FieldLabel>
                 <Input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  placeholder="0,00"
-                  value={form.valor || ""}
-                  onChange={(e) => setField("valor", parseFloat(e.target.value) || 0)}
+                  type="date"
+                  value={form.data_pagamento}
+                  onChange={(e) => setField("data_pagamento", e.target.value)}
                 />
-                {errors.valor && (
-                  <p className="text-xs text-destructive">{errors.valor}</p>
+                {errors.data_pagamento && (
+                  <p className="text-xs text-destructive">{errors.data_pagamento}</p>
                 )}
               </Field>
 
-              {/* Data de Recebimento */}
               <Field>
-                <FieldLabel>Data de Recebimento</FieldLabel>
+                <FieldLabel>
+                  Último Pagamento
+                  <span className="ml-1 text-xs text-muted-foreground">(opcional)</span>
+                </FieldLabel>
                 <Input
                   type="date"
-                  value={form.data_recebimento}
-                  onChange={(e) => setField("data_recebimento", e.target.value)}
+                  value={form.data_ultimo_pagamento ?? ""}
+                  onChange={(e) => setField("data_ultimo_pagamento", e.target.value || undefined)}
                 />
-                {errors.data_recebimento && (
-                  <p className="text-xs text-destructive">{errors.data_recebimento}</p>
+                {errors.data_ultimo_pagamento && (
+                  <p className="text-xs text-destructive">{errors.data_ultimo_pagamento}</p>
                 )}
               </Field>
             </div>

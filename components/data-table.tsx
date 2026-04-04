@@ -110,6 +110,20 @@ export function DataTable<TData, TValue>({
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
+                if (column.id === "data_ult_pagamento") {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      Último Pagamento
+                    </DropdownMenuCheckboxItem>
+                  )
+                }
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}

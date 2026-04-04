@@ -60,6 +60,19 @@ export default function Page() {
     if (!deleteId) return;
     const response = await fetch(`/api/ganhos/delete/${deleteId}`, { method: "DELETE" });
 
+    if (response.status === 401) {
+      alert("Sessão expirada. Por favor, faça login novamente.");
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      router.push("/");
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || "Erro ao excluir ganho");
@@ -81,6 +94,19 @@ export default function Page() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+
+    if (response.status === 401) {
+      alert("Sessão expirada. Por favor, faça login novamente.");
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      router.push("/");
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -129,7 +155,7 @@ export default function Page() {
   async function fetchCategorias(): Promise<Categorias[]> {
     try {
 
-      const response = await fetch(`/api/categorias`);
+      const response = await fetch(`/api/categorias?tipo=receita`);
 
       if (response.status === 401) {
         alert("Sessão expirada. Por favor, faça login novamente.");
