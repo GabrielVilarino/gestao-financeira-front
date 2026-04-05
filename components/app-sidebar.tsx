@@ -57,6 +57,10 @@ const data = {
           title: "Metas",
           url: "/metas",
         },
+        {
+          title: "Configurações",
+          url: "/config",
+        }
       ],
     },
   ],

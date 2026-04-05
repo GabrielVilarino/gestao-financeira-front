@@ -180,7 +180,7 @@ export default function Page() {
 
   async function fetchSubcategorias(): Promise<Subcategorias[]> {
     try {
-      const response = await fetch(`/api/categorias/subcategorias`);
+      const response = await fetch(`/api/subcategorias`);
 
       if (response.status === 401) {
         alert("Sessão expirada. Por favor, faça login novamente.");
