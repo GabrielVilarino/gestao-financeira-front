@@ -6,6 +6,7 @@ import {
   ChevronsUpDown,
   LogOut,
 } from "lucide-react"
+import { useGroupContext } from "@/lib/context/group-context"
 
 import {
   Avatar,
@@ -39,8 +40,8 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-
   const router = useRouter()
+  const { clearGroup } = useGroupContext()
 
   async function handleLogout() {
 
@@ -51,6 +52,9 @@ export function NavUser({
           "Content-Type": "application/json",
         }
       });
+
+      // Limpar dados do grupo independente do resultado
+      clearGroup();
 
       if (response.status === 401) {
         router.push("/");

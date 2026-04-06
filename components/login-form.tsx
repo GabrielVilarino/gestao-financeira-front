@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGroupContext } from "@/lib/context/group-context";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,11 +29,26 @@ const loginSchema = z.object({
 
 type LoginData = z.infer<typeof loginSchema>;
 
+type AuthUserResponse = {
+  id_usuario: number;
+  nome: string;
+  email: string;
+  is_admin: boolean;
+  id_grupo: number | null;
+};
+
+type GrupoResponse = {
+  id: number;
+  nome: string;
+  data_criacao: string;
+};
+
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+  const { updateGroup, clearGroup } = useGroupContext();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
@@ -65,6 +81,33 @@ export function LoginForm({
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Erro ao realizar login");
+      }
+
+      const userData: AuthUserResponse = await response.json();
+
+      // Se o usuário tem um grupo, buscar os dados do grupo
+      if (userData.id_grupo) {
+        try {
+          const grupoResponse = await fetch(`/api/grupos/${userData.id_grupo}`);
+          
+          if (grupoResponse.ok) {
+            const grupoData: GrupoResponse = await grupoResponse.json();
+            updateGroup({
+              id: grupoData.id,
+              nome: grupoData.nome,
+              isAdmin: userData.is_admin, // ← Usa is_admin do login
+            });
+          } else {
+            // Se falhar ao buscar o grupo, limpar dados do grupo
+            clearGroup();
+          }
+        } catch (err) {
+          console.error("Erro ao buscar dados do grupo:", err);
+          clearGroup();
+        }
+      } else {
+        // Usuário não tem grupo, garantir que o Context está limpo
+        clearGroup();
       }
 
       clearForm();

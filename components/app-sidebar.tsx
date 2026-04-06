@@ -5,8 +5,10 @@ import Image from "next/image"
 import Link from "next/link"
 import {
   Wallet,
-  ChartBar
+  ChartBar,
+  Users,
 } from "lucide-react"
+import { useGroupContext } from "@/lib/context/group-context"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -33,7 +35,12 @@ const data = {
       plan: "Finanças",
     },
   ],
-  navMain: [
+}
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { hasGroup, groupName, isAdmin } = useGroupContext()
+
+  const navMain = [
     {
       title: "Dashboard",
       url: "/home",
@@ -60,17 +67,49 @@ const data = {
         {
           title: "Configurações",
           url: "/config",
-        }
+        },
       ],
     },
-  ],
-}
+    {
+      title: groupName || "Grupo",
+      url: hasGroup ? "#" : "/grupo",
+      icon: Users,
+      isActive: false,
+      items: hasGroup
+        ? [
+            {
+              title: "Ganhos",
+              url: "/grupo/ganhos",
+            },
+            {
+              title: "Despesas",
+              url: "/grupo/despesas",
+            },
+            {
+              title: "Metas",
+              url: "/grupo/metas",
+            },
+            {
+              title: "Configurações",
+              url: "/grupo/config",
+            },
+            ...(isAdmin
+              ? [
+                  {
+                    title: "Administração",
+                    url: "/grupo/admin",
+                  },
+                ]
+              : []),
+          ]
+        : undefined,
+    },
+  ]
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <Link href="/home"> 
+        <Link href="/home">
           <SidebarMenuButton
             size="lg"
             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -86,7 +125,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
