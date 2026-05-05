@@ -6,6 +6,9 @@ import { ColumnDef } from "@tanstack/react-table"
 import { 
   MoreHorizontal,
   ArrowUpDown,
+  CalendarDays,
+  Banknote,
+  Briefcase,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const ganhoSchema = z.object({
   id: z.number().positive("ID deve ser positivo"),
@@ -142,3 +146,82 @@ export const columns: ColumnDef<Ganho>[] = [
     },
   },
 ]
+
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "UTC",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+})
+
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+})
+
+export function renderMobileCard(
+  ganho: Ganho,
+  meta: {
+    onEdit?: (id: number) => void
+    onDelete?: (id: number) => void
+  }
+) {
+  return (
+    <Card key={ganho.id} className="w-full">
+      <CardHeader className="flex flex-row items-start justify-between pb-2 gap-2">
+        <CardTitle className="text-base font-semibold leading-tight">
+          {ganho.nome}
+        </CardTitle>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 shrink-0 p-0">
+              <span className="sr-only">Abrir menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onSelect={() => meta.onEdit?.(ganho.id)}
+            >
+              Editar Ganho
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="hover:cursor-pointer text-destructive focus:text-destructive"
+              onSelect={() => meta.onDelete?.(ganho.id)}
+            >
+              Excluir Ganho
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+          <span>Recebimento</span>
+        </div>
+        <div className="text-right font-medium">
+          {dateFormatter.format(new Date(ganho.data as unknown as string))}
+        </div>
+
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <Banknote className="h-3.5 w-3.5 shrink-0" />
+          <span>Valor</span>
+        </div>
+        <div className="text-right font-semibold text-primary">
+          {currencyFormatter.format(ganho.valor)}
+        </div>
+
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <Briefcase className="h-3.5 w-3.5 shrink-0" />
+          <span>Tipo</span>
+        </div>
+        <div className="text-right">
+          {ganho.tipo.charAt(0).toUpperCase() + ganho.tipo.slice(1).toLowerCase()}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

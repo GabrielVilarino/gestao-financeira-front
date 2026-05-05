@@ -21,7 +21,7 @@ import {
 import { DataTable } from "@/components/data-table";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
-import { columnsCategorias, Categoria, columnsSubCategorias, SubCategoria } from "./columns";
+import { columnsCategorias, Categoria, columnsSubCategorias, SubCategoria, renderCategoriaMobileCard, renderSubCategoriaMobileCard } from "./columns";
 import { CategoriaDialog, CategoriaFormData } from "./categoria-dialog";
 import { SubCategoriaDialog, SubCategoriaFormData } from "./subcategoria-dialog";
 
@@ -263,6 +263,7 @@ export default function Page() {
               onAdd={handleOpenAddCategoria}
               onEdit={handleOpenEditCategoria}
               onDelete={handleOpenDeleteCategoria}
+              renderMobileCard={(row, meta) => renderCategoriaMobileCard(row, meta)}
               dialog={
                 <>
                   <CategoriaDialog
@@ -297,6 +298,7 @@ export default function Page() {
               onAdd={handleOpenAddSubCategoria}
               onEdit={handleOpenEditSubCategoria}
               onDelete={handleOpenDeleteSubCategoria}
+              renderMobileCard={(row, meta) => renderSubCategoriaMobileCard(row, meta)}
               dialog={
                 <>
                   <SubCategoriaDialog

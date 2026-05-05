@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 
 import { useDashboard } from "@/app/hooks/use-dashboard"
+import { useIsMobile } from "@/app/hooks/use-mobile"
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar"
 import {
@@ -116,7 +117,7 @@ function DashboardCard({
   return (
     <Card className="gap-4">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-0">
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <CardDescription>{title}</CardDescription>
           <CardTitle className="text-2xl">{value}</CardTitle>
         </div>
@@ -153,6 +154,7 @@ function DashboardCardSkeleton() {
 
 export default function Page() {
   const { hasGroup, groupId, groupName } = useGroupContext()
+  const isMobile = useIsMobile()
   const {
     filters,
     summary,
@@ -227,8 +229,8 @@ export default function Page() {
           </div>
         </header>
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
-          <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="grid content-start gap-4">
+          <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid grid-cols-1 content-start gap-4 min-w-0">
               <Card>
                 <CardHeader className="gap-3 md:flex-row md:items-end md:justify-between">
                   <div className="space-y-1">
@@ -243,7 +245,7 @@ export default function Page() {
                       : "Escopo: Caixa pessoal"}
                   </div>
                 </CardHeader>
-                <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <div className="space-y-2">
                     <div className="text-sm font-medium text-muted-foreground">
                       Data inicial
@@ -330,7 +332,7 @@ export default function Page() {
                 </Card>
               ) : null}
 
-              <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
                 {isLoading ? (
                   <>
                     <DashboardCardSkeleton />
@@ -371,7 +373,7 @@ export default function Page() {
               </div>
             </div>
 
-            <Card className="h-full xl:min-h-full">
+            <Card className="h-full min-w-0 xl:min-h-full">
               <CardHeader>
                 <CardTitle className="text-base">Comparativo do período</CardTitle>
                 <CardDescription>
@@ -380,9 +382,9 @@ export default function Page() {
               </CardHeader>
               <CardContent className="flex h-full flex-1 items-center">
                 {isLoading ? (
-                  <Skeleton className="h-65 w-full" />
+                  <Skeleton className="h-52 w-full md:h-65" />
                 ) : (
-                  <ChartContainer config={chartConfig} className="h-65 w-full">
+                  <ChartContainer config={chartConfig} className="h-52 w-full md:h-65">
                     <ComposedChart data={comparisonChartData} layout="vertical" margin={{ left: 12, right: 12 }}>
                       <CartesianGrid horizontal={false} />
                       <XAxis
@@ -401,7 +403,7 @@ export default function Page() {
                         type="category"
                         tickLine={false}
                         axisLine={false}
-                        width={72}
+                        width={isMobile ? 56 : 72}
                       />
                       <ChartTooltip
                         cursor={false}
@@ -419,7 +421,7 @@ export default function Page() {
               </CardContent>
             </Card>
 
-            <Card className="h-full">
+            <Card className="h-full min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ChartColumnIncreasing className="size-5 text-primary" />
@@ -431,9 +433,9 @@ export default function Page() {
                 </CardHeader>
                 <CardContent>
                   {isLoading ? (
-                    <Skeleton className="h-85 w-full" />
+                    <Skeleton className="h-64 w-full md:h-85" />
                   ) : chartData.length ? (
-                    <ChartContainer config={chartConfig} className="h-85 w-full">
+                    <ChartContainer config={chartConfig} className="h-64 w-full md:h-85">
                       <ComposedChart data={chartData} margin={{ left: 12, right: 12, top: 12 }}>
                         <CartesianGrid vertical={false} />
                         <XAxis
@@ -445,7 +447,7 @@ export default function Page() {
                         <YAxis
                           tickLine={false}
                           axisLine={false}
-                          width={92}
+                          width={isMobile ? 60 : 92}
                           tickFormatter={(value: number) =>
                             value.toLocaleString("pt-BR", {
                               style: "currency",
@@ -486,14 +488,14 @@ export default function Page() {
                       </ComposedChart>
                     </ChartContainer>
                   ) : (
-                    <div className="flex h-85 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
+                    <div className="flex h-64 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground md:h-85">
                       Nenhum dado mensal foi retornado para o período selecionado.
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-            <Card className="h-full">
+            <Card className="h-full min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Leitura do recorte</CardTitle>
                   <CardDescription>

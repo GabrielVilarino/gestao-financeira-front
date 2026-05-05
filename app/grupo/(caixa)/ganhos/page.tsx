@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useGroupContext } from "@/lib/context/group-context"
 
-import { columns, Ganho } from "./columns"
+import { columns, Ganho, renderMobileCard } from "./columns"
 import { GanhoDialog, GanhoFormData } from "./ganho-dialog"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import formatDate from "@/functions/format-date"
@@ -292,6 +292,7 @@ export default function GrupoGanhosPage() {
                   onAdd={handleOpenAdd}
                   onEdit={handleOpenEdit}
                   onDelete={handleOpenDelete}
+                  renderMobileCard={(row, meta) => renderMobileCard(row, meta)}
                   dialog={
                     <>
                       <GanhoDialog

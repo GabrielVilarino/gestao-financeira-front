@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { columns, Despesa } from "./columns";
+import { columns, Despesa, renderMobileCard } from "./columns";
 import { DespesaDialog, DespesaFormData } from "./despesa-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import formatDate from "@/functions/format-date";
@@ -264,6 +264,7 @@ export default function Page() {
                   onAdd={handleOpenAdd}
                   onEdit={handleOpenEdit}
                   onDelete={handleOpenDelete}
+                  renderMobileCard={(row, meta) => renderMobileCard(row, meta)}
                   dialog={
                     <>
                       <DespesaDialog

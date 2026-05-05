@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useGroupContext } from "@/lib/context/group-context"
 
-import { columns, Participante } from "./columns"
+import { columns, Participante, renderMobileCard } from "./columns"
 import { ParticipanteDialog, ParticipanteFormData } from "./participante-dialog"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -260,6 +260,7 @@ export default function GrupoAdminPage() {
                 onAdd={handleOpenAdd}
                 onDelete={handleOpenDelete}
                 onToggleAdmin={handleOpenToggleAdmin}
+                renderMobileCard={(row, meta) => renderMobileCard(row, meta)}
                 dialog={
                   <>
                     <ParticipanteDialog

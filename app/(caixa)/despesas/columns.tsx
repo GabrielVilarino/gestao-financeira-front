@@ -6,6 +6,11 @@ import { ColumnDef } from "@tanstack/react-table"
 import {
   MoreHorizontal,
   ArrowUpDown,
+  CalendarDays,
+  Tag,
+  Layers,
+  RefreshCcw,
+  Banknote,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const despesaSchema = z.object({
   id: z.number().positive("ID deve ser positivo"),
@@ -196,4 +202,109 @@ export const columns: ColumnDef<Despesa>[] = [
   },
 ]
 
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "UTC",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+})
 
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+})
+
+export function renderMobileCard(
+  despesa: Despesa,
+  meta: {
+    onEdit?: (id: number) => void
+    onDelete?: (id: number) => void
+  }
+) {
+  return (
+    <Card key={despesa.id} className="w-full">
+      <CardHeader className="flex flex-row items-start justify-between pb-2 gap-2">
+        <CardTitle className="text-base font-semibold leading-tight">
+          {despesa.nome}
+        </CardTitle>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 shrink-0 p-0">
+              <span className="sr-only">Abrir menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="hover:cursor-pointer"
+              onSelect={() => meta.onEdit?.(despesa.id)}
+            >
+              Editar Despesa
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="hover:cursor-pointer text-destructive focus:text-destructive"
+              onSelect={() => meta.onDelete?.(despesa.id)}
+            >
+              Excluir Despesa
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+          <span>Pagamento</span>
+        </div>
+        <div className="text-right font-medium">
+          {dateFormatter.format(new Date(despesa.data))}
+        </div>
+
+        {despesa.data_ult_pagamento && (
+          <>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <RefreshCcw className="h-3.5 w-3.5 shrink-0" />
+              <span>Último pag.</span>
+            </div>
+            <div className="text-right font-medium">
+              {dateFormatter.format(new Date(despesa.data_ult_pagamento))}
+            </div>
+          </>
+        )}
+
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <Banknote className="h-3.5 w-3.5 shrink-0" />
+          <span>Valor</span>
+        </div>
+        <div className="text-right font-semibold text-destructive">
+          {currencyFormatter.format(despesa.valor)}
+        </div>
+
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <Tag className="h-3.5 w-3.5 shrink-0" />
+          <span>Categoria</span>
+        </div>
+        <div className="text-right">
+          {despesa.categoria.charAt(0).toUpperCase() + despesa.categoria.slice(1).toLowerCase()}
+        </div>
+
+        {despesa.subcategoria && (
+          <>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Layers className="h-3.5 w-3.5 shrink-0" />
+              <span>Subcategoria</span>
+            </div>
+            <div className="text-right">
+              {despesa.subcategoria.charAt(0).toUpperCase() + despesa.subcategoria.slice(1).toLowerCase()}
+            </div>
+          </>
+        )}
+
+        <div className="col-span-2 mt-1 rounded-md bg-muted/50 px-2 py-1 text-center text-xs text-muted-foreground">
+          {despesa.tipo.charAt(0).toUpperCase() + despesa.tipo.slice(1).toLowerCase()}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

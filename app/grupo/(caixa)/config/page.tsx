@@ -28,6 +28,8 @@ import {
   Categoria,
   columnsSubCategorias,
   SubCategoria,
+  renderCategoriaMobileCard,
+  renderSubCategoriaMobileCard,
 } from "./columns"
 import { CategoriaDialog, CategoriaFormData } from "./categoria-dialog"
 import { SubCategoriaDialog, SubCategoriaFormData } from "./subcategoria-dialog"
@@ -310,6 +312,7 @@ export default function GrupoConfigPage() {
               onAdd={handleOpenAddCategoria}
               onEdit={handleOpenEditCategoria}
               onDelete={handleOpenDeleteCategoria}
+              renderMobileCard={(row, meta) => renderCategoriaMobileCard(row, meta)}
               dialog={
                 <>
                   <CategoriaDialog
@@ -346,6 +349,7 @@ export default function GrupoConfigPage() {
               onAdd={handleOpenAddSubCategoria}
               onEdit={handleOpenEditSubCategoria}
               onDelete={handleOpenDeleteSubCategoria}
+              renderMobileCard={(row, meta) => renderSubCategoriaMobileCard(row, meta)}
               dialog={
                 <>
                   <SubCategoriaDialog
