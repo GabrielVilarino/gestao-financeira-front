@@ -31,7 +31,7 @@ const data = {
   teams: [
     {
       name: "Gestão Financeira",
-      logo: "/logo.svg",
+      logo: "/logo.png",
       plan: "Finanças",
     },
   ],
