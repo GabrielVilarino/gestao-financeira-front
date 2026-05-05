@@ -10,6 +10,7 @@ import formatDate from "@/functions/format-date";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppSidebar } from "@/components/app-sidebar"
 import { DataTable } from "@/components/data-table";
+import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -247,12 +248,24 @@ export default function Page() {
               <div className="flex h-64 w-full items-center justify-center">
                 <span className="text-sm text-muted-foreground">Carregando ganhos...</span>
               </div>
-            ) : !ganhos ? 
+            ) : !ganhos || ganhos.length === 0 ?
             (
-              <div className="flex h-64 w-full items-center justify-center">
+              <div className="flex h-64 w-full flex-col items-center justify-center gap-4">
                 <span className="text-sm text-muted-foreground">Nenhum ganho encontrado.</span>
+                <Button onClick={handleOpenAdd}>Adicionar ganho</Button>
+                <GanhoDialog
+                  open={dialogOpen}
+                  onOpenChange={(open) => {
+                    setDialogOpen(open);
+                    if (!open) setEditId(undefined);
+                  }}
+                  id={editId}
+                  categorias={categorias}
+                  subcategorias={subcategorias}
+                  onSubmit={handleSubmit}
+                />
               </div>
-            ) : ganhos?.length > 0 &&
+            ) :
             (
               <div className="container mx-auto py-10">
                 <DataTable

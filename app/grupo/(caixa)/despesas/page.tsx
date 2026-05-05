@@ -12,6 +12,7 @@ import formatDate from "@/functions/format-date"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AppSidebar } from "@/components/app-sidebar"
 import { DataTable } from "@/components/data-table"
+import { Button } from "@/components/ui/button"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -277,53 +278,63 @@ export default function GrupoDespesasPage() {
                 Carregando despesas...
               </span>
             </div>
-          ) : !despesas ? (
-            <div className="flex h-64 w-full items-center justify-center">
+          ) : !despesas || despesas.length === 0 ? (
+            <div className="flex h-64 w-full flex-col items-center justify-center gap-4">
               <span className="text-sm text-muted-foreground">
                 Nenhuma despesa encontrada.
               </span>
+              <Button onClick={handleOpenAdd}>Adicionar despesa</Button>
+              <DespesaDialog
+                open={dialogOpen}
+                onOpenChange={(open) => {
+                  setDialogOpen(open)
+                  if (!open) setEditId(undefined)
+                }}
+                id={editId}
+                categorias={categorias}
+                subcategorias={subcategorias}
+                onSubmit={handleSubmit}
+              />
             </div>
           ) : (
-            despesas?.length > 0 && (
-              <div className="container mx-auto py-10">
-                <DataTable
-                  columns={columns}
-                  data={despesas}
-                  filterColumn="nome"
-                  filterPlaceholder="Filtrar por nome..."
-                  onAdd={handleOpenAdd}
-                  onEdit={handleOpenEdit}
-                  onDelete={handleOpenDelete}
-                  renderMobileCard={(row, meta) => renderMobileCard(row, meta)}
-                  dialog={
-                    <>
-                      <DespesaDialog
-                        open={dialogOpen}
-                        onOpenChange={(open) => {
-                          setDialogOpen(open)
-                          if (!open) setEditId(undefined)
-                        }}
-                        id={editId}
-                        categorias={categorias}
-                        subcategorias={subcategorias}
-                        onSubmit={handleSubmit}
-                      />
-                      <ConfirmDialog
-                        open={confirmOpen}
-                        onOpenChange={(open) => {
-                          setConfirmOpen(open)
-                          if (!open) setDeleteId(undefined)
-                        }}
-                        title="Excluir despesa"
-                        description="Essa ação não pode ser desfeita. Deseja realmente excluir esta despesa?"
-                        confirmLabel="Excluir"
-                        onConfirm={handleConfirmDelete}
-                      />
-                    </>
-                  }
-                />
-              </div>
-            )
+            <div className="container mx-auto py-10">
+              <DataTable
+                columns={columns}
+                data={despesas}
+                filterColumn="nome"
+                filterPlaceholder="Filtrar por nome..."
+                onAdd={handleOpenAdd}
+                onEdit={handleOpenEdit}
+                onDelete={handleOpenDelete}
+                renderMobileCard={(row, meta) => renderMobileCard(row, meta)}
+                dialog={
+                  <>
+                    <DespesaDialog
+                      open={dialogOpen}
+                      onOpenChange={(open) => {
+                        setDialogOpen(open)
+                        if (!open) setEditId(undefined)
+                      }}
+                      id={editId}
+                      categorias={categorias}
+                      subcategorias={subcategorias}
+                      onSubmit={handleSubmit}
+                    />
+                    <ConfirmDialog
+                      open={confirmOpen}
+                      onOpenChange={(open) => {
+                        setConfirmOpen(open)
+                        if (!open) setDeleteId(undefined)
+                      }}
+                      title="Excluir despesa"
+                      description="Essa ação não pode ser desfeita. Deseja realmente excluir esta despesa?"
+                      confirmLabel="Excluir"
+                      onConfirm={handleConfirmDelete}
+                    />
+                  </>
+                }
+              />
+            </div>
           )}
         </div>
       </SidebarInset>
