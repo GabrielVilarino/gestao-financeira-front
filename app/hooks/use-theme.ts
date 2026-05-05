@@ -11,20 +11,20 @@ export function useTheme() {
     const stored = localStorage.getItem("theme") as Theme | null;
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const initialTheme = stored || (prefersDark ? "dark" : "light");
-    
+
     setTheme(initialTheme);
     applyTheme(initialTheme);
   }, []);
 
   function applyTheme(newTheme: Theme) {
-    document.documentElement.style.setProperty(
-      "--background",
-      newTheme === "dark" ? "#0d1f0d" : "#ffffff"
-    );
-    document.documentElement.style.setProperty(
-      "--foreground",
-      newTheme === "dark" ? "#e8f5e8" : "#171717"
-    );
+    const root = document.documentElement;
+    root.style.removeProperty("--background");
+    root.style.removeProperty("--foreground");
+    if (newTheme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
   }
 
   function toggleTheme() {
