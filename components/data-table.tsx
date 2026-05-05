@@ -18,6 +18,7 @@ declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
     onEditRow?: (id: number) => void
     onDeleteRow?: (id: number) => void
+    onToggleAdminRow?: (id: number, isAdmin: boolean) => void
   }
 }
 
@@ -50,6 +51,7 @@ interface DataTableProps<TData, TValue> {
   onAdd?: () => void
   onEdit?: (id: number) => void
   onDelete?: (id: number) => void
+  onToggleAdmin?: (id: number, isAdmin: boolean) => void
   dialog?: React.ReactNode
 }
 
@@ -61,6 +63,7 @@ export function DataTable<TData, TValue>({
   onAdd,
   onEdit,
   onDelete,
+  onToggleAdmin,
   dialog,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -85,6 +88,7 @@ export function DataTable<TData, TValue>({
     meta: {
       onEditRow: onEdit,
       onDeleteRow: onDelete,
+      onToggleAdminRow: onToggleAdmin,
     },
   })
 
