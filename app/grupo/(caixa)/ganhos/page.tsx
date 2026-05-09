@@ -189,10 +189,11 @@ export default function GrupoGanhosPage() {
         })
 
         router.push("/")
+        return []
       }
       const ganhos = await response.json()
 
-      return ganhos
+      return Array.isArray(ganhos) ? ganhos : []
     } catch (error) {
       console.error("Erro ao buscar ganhos:", error)
       return []
@@ -216,9 +217,10 @@ export default function GrupoGanhosPage() {
         })
 
         router.push("/")
+        return []
       }
       const categorias = await response.json()
-      return categorias
+      return Array.isArray(categorias) ? categorias : []
     } catch (error) {
       console.error("Erro ao buscar categorias:", error)
       return []
@@ -240,10 +242,11 @@ export default function GrupoGanhosPage() {
         })
 
         router.push("/")
+        return []
       }
       const subcategorias = await response.json()
 
-      return subcategorias
+      return Array.isArray(subcategorias) ? subcategorias : []
     } catch (error) {
       console.error("Erro ao buscar subcategorias:", error)
       return []

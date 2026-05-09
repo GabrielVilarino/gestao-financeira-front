@@ -190,10 +190,11 @@ export default function GrupoDespesasPage() {
         })
 
         router.push("/")
+        return []
       }
 
       const despesas = await response.json()
-      return despesas
+      return Array.isArray(despesas) ? despesas : []
     } catch (error) {
       console.error("Erro ao buscar despesas:", error)
       return []
@@ -217,10 +218,11 @@ export default function GrupoDespesasPage() {
         })
 
         router.push("/")
+        return []
       }
 
       const categorias = await response.json()
-      return categorias
+      return Array.isArray(categorias) ? categorias : []
     } catch (error) {
       console.error("Erro ao buscar categorias:", error)
       return []
@@ -242,10 +244,11 @@ export default function GrupoDespesasPage() {
         })
 
         router.push("/")
+        return []
       }
 
       const subcategorias = await response.json()
-      return subcategorias
+      return Array.isArray(subcategorias) ? subcategorias : []
     } catch (error) {
       console.error("Erro ao buscar subcategorias:", error)
       return []

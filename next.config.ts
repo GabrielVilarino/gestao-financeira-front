@@ -23,6 +23,17 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Impede que o browser cache páginas HTML — evita "Application error"
+      // após novos deploys quando o SW serve HTML antigo com JS chunks desatualizados
+      {
+        source: "/:path(|home|ganhos|despesas|recorrencias|metas|config|grupo.*|user.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, must-revalidate",
+          },
+        ],
+      },
       {
         source: "/sw.js",
         headers: [

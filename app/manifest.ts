@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Gestão Financeira",
     short_name: "Gestão Financeira",
     description: "Controle financeiro pessoal e em grupo",
-    start_url: "/",
+    start_url: "/home",
     display: "standalone",
     orientation: "portrait",
     background_color: "#ffffff",

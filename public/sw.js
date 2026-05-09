@@ -1,5 +1,6 @@
-const CACHE_NAME = "gestao-financeira-v1"
-const STATIC_ASSETS = ["/", "/home", "/icon-192x192.png", "/icon-512x512.png"]
+const CACHE_NAME = "gestao-financeira-v2"
+// Apenas assets verdadeiramente estáticos (nunca mudam entre deploys)
+const STATIC_ASSETS = ["/icon-192x192.png", "/icon-512x512.png"]
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -35,13 +36,22 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
+  // Não interceptar requisições de navegação (HTML pages).
+  // iOS Safari rejeita respostas de redirect servidas pelo SW em modo standalone.
+  // Além disso, cachear HTML causa "Application error" após novos deploys
+  // porque os JS chunks referenciados no HTML antigo não existem mais.
+  if (event.request.mode === "navigate") {
+    return
+  }
+
+  // Para assets estáticos: cache-first
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse
       }
       return fetch(event.request).then((response) => {
-        // Não cachear respostas inválidas
+        // Não cachear respostas inválidas ou opacas
         if (
           !response ||
           response.status !== 200 ||

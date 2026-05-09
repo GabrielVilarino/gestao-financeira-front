@@ -1,11 +1,9 @@
 import { LoginForm } from "@/components/login-form";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ClearSession } from "./clear-session";
 
 export default function Home() {
   return (
     <div className="min-h-screen p-8">
-      <ClearSession />
       <header className="flex justify-end">
         <ThemeToggle />
       </header>

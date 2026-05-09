@@ -63,7 +63,8 @@ export default function Page() {
         await handleUnauthorized();
         return [];
       }
-      return await response.json();
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error("Erro ao buscar categorias:", error);
       return [];

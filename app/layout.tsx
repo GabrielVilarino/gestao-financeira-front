@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { InstallPrompt } from "@/components/install-prompt";
+import { GlobalErrorDebug } from "@/components/global-error-debug";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full overflow-hidden`}
       >
+        {/* <GlobalErrorDebug /> */}
         <Providers>
           {children}
           <InstallPrompt />
