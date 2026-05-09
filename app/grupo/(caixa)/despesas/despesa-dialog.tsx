@@ -421,7 +421,7 @@ export function DespesaDialog({
                 <Field>
                   <FieldLabel>
                     Data de Fim
-                    <span className="ml-1 text-xs text-muted-foreground">(opcional â€” sem prazo se vazio)</span>
+                    <span className="ml-1 text-xs text-muted-foreground">(opcional — sem prazo se vazio)</span>
                   </FieldLabel>
                   <Input
                     type="date"
@@ -508,9 +508,9 @@ export function DespesaDialog({
                 : isLoading
                   ? "Salvando..."
                   : isEditing
-                    ? "Salvar AlteraÃ§Ãµes"
+                    ? "Salvar Alterações"
                     : repetir
-                      ? "Criar RecorrÃªncia"
+                      ? "Criar Recorrência"
                       : "Adicionar"}
             </Button>
           </DialogFooter>
