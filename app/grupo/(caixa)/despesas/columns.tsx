@@ -9,7 +9,6 @@ import {
   CalendarDays,
   Tag,
   Layers,
-  RefreshCcw,
   Banknote,
 } from "lucide-react"
 
@@ -26,13 +25,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const despesaSchema = z.object({
   id: z.number().positive("ID deve ser positivo"),
-  nome: z.string().min(1, "Nome é obrigatório"),
-  data: z.string(),
-  data_ult_pagamento: z.string().nullable(),
+  nome: z.string(),
+  descricao: z.string(),
   valor: z.number().positive("Valor deve ser positivo"),
+  competencia: z.string(),
+  status: z.string(),
   categoria: z.string(),
-  subcategoria: z.string(),
-  tipo: z.string(),
+  subcategoria: z.string().nullable(),
 })
 
 export type Despesa = z.infer<typeof despesaSchema>
@@ -46,7 +45,7 @@ export const columns: ColumnDef<Despesa>[] = [
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         className="w-full justify-center"
       >
-        Nome
+        Membro
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
@@ -55,19 +54,35 @@ export const columns: ColumnDef<Despesa>[] = [
     ),
   },
   {
-    accessorKey: "data",
+    accessorKey: "descricao",
     header: ({ column }) => (
       <Button
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         className="w-full justify-center"
       >
-        Data do Pagamento
+        Descrição
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <div className="w-full flex justify-center">{row.getValue("descricao")}</div>
+    ),
+  },
+  {
+    accessorKey: "competencia",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="w-full justify-center"
+      >
+        Competência
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => {
-      const data = new Date(row.getValue("data") as string)
+      const data = new Date(row.getValue("competencia") as string)
       return (
         <div className="w-full flex justify-center">
           {new Intl.DateTimeFormat("pt-BR", {
@@ -76,28 +91,6 @@ export const columns: ColumnDef<Despesa>[] = [
             month: "2-digit",
             year: "numeric",
           }).format(data)}
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: "data_ult_pagamento",
-    header: () => (
-      <Button variant="ghost" className="w-full justify-center hover:cursor-default hover:bg-transparent">
-        Último Pagamento
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const data = row.getValue("data_ult_pagamento") as string | null
-      if (!data) return <div className="w-full flex justify-center">—</div>
-      return (
-        <div className="w-full flex justify-center">
-          {new Intl.DateTimeFormat("pt-BR", {
-            timeZone: "UTC",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }).format(new Date(data))}
         </div>
       )
     },
@@ -114,6 +107,22 @@ export const columns: ColumnDef<Despesa>[] = [
       return (
         <div className="w-full flex justify-center">
           {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor)}
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: "status",
+    header: () => (
+      <Button variant="ghost" className="w-full justify-center hover:cursor-default hover:bg-transparent">
+        Status
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string
+      return (
+        <div className="w-full flex justify-center">
+          {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
         </div>
       )
     },
@@ -142,27 +151,11 @@ export const columns: ColumnDef<Despesa>[] = [
       </Button>
     ),
     cell: ({ row }) => {
-      const subcategoria = row.getValue("subcategoria") as string
+      const subcategoria = row.getValue("subcategoria") as string | null
       if (!subcategoria) return <div className="w-full flex justify-center">—</div>
       return (
         <div className="w-full flex justify-center">
           {subcategoria.charAt(0).toUpperCase() + subcategoria.slice(1).toLowerCase()}
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: "tipo",
-    header: () => (
-      <Button variant="ghost" className="w-full justify-center hover:cursor-default hover:bg-transparent">
-        Tipo
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const tipo = row.getValue("tipo") as string
-      return (
-        <div className="w-full flex justify-center">
-          {tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase()}
         </div>
       )
     },
@@ -225,7 +218,7 @@ export function renderMobileCard(
     <Card key={despesa.id} className="w-full">
       <CardHeader className="flex flex-row items-start justify-between pb-2 gap-2">
         <CardTitle className="text-base font-semibold leading-tight">
-          {despesa.nome}
+          {despesa.descricao}
         </CardTitle>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -254,24 +247,17 @@ export function renderMobileCard(
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <div className="flex items-center gap-1.5 text-muted-foreground">
+          <span className="font-medium">Membro</span>
+        </div>
+        <div className="text-right">{despesa.nome}</div>
+
+        <div className="flex items-center gap-1.5 text-muted-foreground">
           <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-          <span>Pagamento</span>
+          <span>Competência</span>
         </div>
         <div className="text-right font-medium">
-          {dateFormatter.format(new Date(despesa.data))}
+          {dateFormatter.format(new Date(despesa.competencia))}
         </div>
-
-        {despesa.data_ult_pagamento && (
-          <>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <RefreshCcw className="h-3.5 w-3.5 shrink-0" />
-              <span>Último pag.</span>
-            </div>
-            <div className="text-right font-medium">
-              {dateFormatter.format(new Date(despesa.data_ult_pagamento))}
-            </div>
-          </>
-        )}
 
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <Banknote className="h-3.5 w-3.5 shrink-0" />
@@ -302,7 +288,7 @@ export function renderMobileCard(
         )}
 
         <div className="col-span-2 mt-1 rounded-md bg-muted/50 px-2 py-1 text-center text-xs text-muted-foreground">
-          {despesa.tipo.charAt(0).toUpperCase() + despesa.tipo.slice(1).toLowerCase()}
+          {despesa.status.charAt(0).toUpperCase() + despesa.status.slice(1).toLowerCase()}
         </div>
       </CardContent>
     </Card>

@@ -26,10 +26,11 @@ self.addEventListener("activate", (event) => {
 })
 
 self.addEventListener("fetch", (event) => {
-  // Ignorar requisições não-GET e requests para a API
+  // Ignorar requisições não-GET, requests para a API e esquemas não suportados
   if (
     event.request.method !== "GET" ||
-    event.request.url.includes("/api/")
+    event.request.url.includes("/api/") ||
+    !event.request.url.startsWith("http")
   ) {
     return
   }

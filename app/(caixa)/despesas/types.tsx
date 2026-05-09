@@ -13,8 +13,12 @@ export type Subcategorias = {
 export type DespesaDetalhe = {
     id_categoria: number
     id_subcategoria: number | null
-    data_pagamento: string
-    data_ult_pagamento: string | null
+    tipo: "RECEITA" | "DESPESA"
+    descricao: string
+    observacao: string | null
     valor: number
-    tipo_transacao: "fixa" | "variavel" | "parcelado"
+    competencia: string
+    data_vencimento: string | null
+    data_pagamento: string | null
+    status: "PENDENTE" | "PAGO" | "ATRASADO" | "CANCELADO"
 }

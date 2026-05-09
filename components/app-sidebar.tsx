@@ -61,6 +61,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "/despesas",
         },
         {
+          title: "Recorrências",
+          url: "/recorrencias",
+        },
+        {
           title: "Metas",
           url: "/metas",
         },
@@ -84,6 +88,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {
               title: "Despesas",
               url: "/grupo/despesas",
+            },
+            {
+              title: "Recorrências",
+              url: "/grupo/recorrencias",
             },
             {
               title: "Metas",

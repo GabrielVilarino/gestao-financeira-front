@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"
 
 import { columns, Ganho, renderMobileCard } from "./columns";
-import { GanhoDialog, GanhoFormData } from "./ganho-dialog";
+import { GanhoDialog, GanhoFormData, RecorrenciaFormData } from "./ganho-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import formatDate from "@/functions/format-date";
 
@@ -59,7 +59,7 @@ export default function Page() {
 
   async function handleConfirmDelete() {
     if (!deleteId) return;
-    const response = await fetch(`/api/ganhos/delete/${deleteId}`, { method: "DELETE" });
+    const response = await fetch(`/api/transacoes/delete/${deleteId}`, { method: "DELETE" });
 
     if (response.status === 401) {
       alert("Sessão expirada. Por favor, faça login novamente.");
@@ -85,10 +85,10 @@ export default function Page() {
 
   async function handleSubmit(data: GanhoFormData, id?: number) {
     const isEditing = id !== undefined;
-    const url = isEditing ? "/api/ganhos/update" : "/api/ganhos/create";
+    const url = isEditing ? "/api/transacoes/update" : "/api/transacoes/create";
     const method = isEditing ? "PUT" : "POST";
 
-    const payload = isEditing ? { id, ...data } : { ...data };
+    const payload = isEditing ? { id, ...data, tipo: "RECEITA" } : { ...data, tipo: "RECEITA" };
 
     const response = await fetch(url, {
       method,
@@ -117,6 +117,32 @@ export default function Page() {
     await fetchGanhos().then(setGanhos);
   }
 
+  async function handleSubmitRecorrencia(data: RecorrenciaFormData) {
+    const response = await fetch("/api/recorrencias/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, tipo: "RECEITA" }),
+    });
+
+    if (response.status === 401) {
+      alert("Sessão expirada. Por favor, faça login novamente.");
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      router.push("/");
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Erro ao criar recorrência");
+    }
+
+    await fetchGanhos().then(setGanhos);
+  }
+
   async function fetchGanhos(): Promise<Ganho[]> {
     setIsLoading(true);
     try {
@@ -128,7 +154,7 @@ export default function Page() {
       const start = formatDate(startDate);
       const end = formatDate(endDate);
 
-      const response = await fetch(`/api/ganhos?data_inicio=${start}&data_fim=${end}`);
+      const response = await fetch(`/api/transacoes?tipo=RECEITA&data_inicio=${start}&data_fim=${end}`);
 
       if (response.status === 401) {
         alert("Sessão expirada. Por favor, faça login novamente.");
@@ -263,6 +289,7 @@ export default function Page() {
                   categorias={categorias}
                   subcategorias={subcategorias}
                   onSubmit={handleSubmit}
+                  onSubmitRecorrencia={handleSubmitRecorrencia}
                 />
               </div>
             ) :
@@ -271,8 +298,8 @@ export default function Page() {
                 <DataTable
                   columns={columns}
                   data={ganhos}
-                  filterColumn="nome"
-                  filterPlaceholder="Filtrar por nome..."
+                  filterColumn="descricao"
+                  filterPlaceholder="Filtrar por descrição..."
                   onAdd={handleOpenAdd}
                   onEdit={handleOpenEdit}
                   onDelete={handleOpenDelete}
@@ -289,6 +316,7 @@ export default function Page() {
                         categorias={categorias}
                         subcategorias={subcategorias}
                         onSubmit={handleSubmit}
+                        onSubmitRecorrencia={handleSubmitRecorrencia}
                       />
                       <ConfirmDialog
                         open={confirmOpen}

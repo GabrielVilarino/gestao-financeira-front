@@ -58,10 +58,7 @@ function ChartContainer({
       <div
         data-slot="chart"
         data-chart={containerId}
-        className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none",
-          className
-        )}
+        className="relative w-full h-87.5 min-h-62.5"
         style={Object.fromEntries(
           Object.entries(config).map(([key, item]) => [
             `--color-${key}`,
@@ -71,7 +68,11 @@ function ChartContainer({
         {...props}
       >
         {isMounted ? (
-          <RechartsPrimitive.ResponsiveContainer>
+          <RechartsPrimitive.ResponsiveContainer
+            width="100%"
+            height={350}
+            minWidth={0}
+          >
             {children}
           </RechartsPrimitive.ResponsiveContainer>
         ) : null}

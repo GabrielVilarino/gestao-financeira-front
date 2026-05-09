@@ -110,7 +110,9 @@ async function fetchJson<T>(url: string, options: FetchJsonOptions): Promise<T> 
     throw new Error(message)
   }
 
-  return response.json() as Promise<T>
+  const data = await response.json().catch(() => null)
+
+  return data as T
 }
 
 function formatMonthLabel(value: string): string {
@@ -143,8 +145,6 @@ export function useDashboard(hasGroup: boolean, groupId: number | null): Dashboa
   )
 
   const handleUnauthorized = useCallback(async () => {
-    alert("Sessão expirada. Por favor, faça login novamente.")
-
     await fetch("/api/auth/logout", {
       method: "POST",
       headers: {
@@ -184,33 +184,42 @@ export function useDashboard(hasGroup: boolean, groupId: number | null): Dashboa
         }
 
         const queryString = query.toString()
-        const [totalGanhosData, totalDespesasData, saldoLiquidoData, evolutionData] =
-          await Promise.all([
-            fetchJson<{ total_ganhos: number }>(
-              `/api/dashboard/total-ganhos?${queryString}`,
-              { onUnauthorized: handleUnauthorized }
-            ),
-            fetchJson<{ total_despesas: number }>(
-              `/api/dashboard/total-despesas?${queryString}`,
-              { onUnauthorized: handleUnauthorized }
-            ),
-            fetchJson<{ saldo_liquido: number }>(
-              `/api/dashboard/saldo-liquido?${queryString}`,
-              { onUnauthorized: handleUnauthorized }
-            ),
-            fetchJson<DashboardEvolutionApiItem[]>(
-              `/api/dashboard/evolucao-mensal?${queryString}`,
-              { onUnauthorized: handleUnauthorized }
-            ),
-          ])
+        const responses = await Promise.all([
+          fetchJson<{ total_ganhos: number }>(
+            `/api/dashboard/total-ganhos?${queryString}`,
+            { onUnauthorized: handleUnauthorized }
+          ),
+          fetchJson<{ total_despesas: number }>(
+            `/api/dashboard/total-despesas?${queryString}`,
+            { onUnauthorized: handleUnauthorized }
+          ),
+          fetchJson<{ saldo_liquido: number }>(
+            `/api/dashboard/saldo-liquido?${queryString}`,
+            { onUnauthorized: handleUnauthorized }
+          ),
+          fetchJson<DashboardEvolutionApiItem[] | null>(
+            `/api/dashboard/evolucao-mensal?${queryString}`,
+            { onUnauthorized: handleUnauthorized }
+          ),
+        ])
+
+        const totalGanhosData = responses[0] ?? { total_ganhos: 0 }
+        const totalDespesasData = responses[1] ?? { total_despesas: 0 }
+        const saldoLiquidoData = responses[2] ?? { saldo_liquido: 0 }
+        const evolutionData = Array.isArray(responses[3]) ? responses[3] : []
 
         setSummary({
           totalGanhos: totalGanhosData.total_ganhos,
           totalDespesas: totalDespesasData.total_despesas,
           saldoLiquido: saldoLiquidoData.saldo_liquido,
         })
+
+        const evolutionList = Array.isArray(evolutionData)
+          ? evolutionData
+          : []
+
         setEvolution(
-          evolutionData.map((item) => ({
+          evolutionList.map((item) => ({
             month: item.mes,
             monthLabel: formatMonthLabel(item.mes),
             totalGanhos: item.total_ganhos,

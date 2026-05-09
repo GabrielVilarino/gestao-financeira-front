@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useGroupContext } from "@/lib/context/group-context"
 
 import { columns, Despesa, renderMobileCard } from "./columns"
-import { DespesaDialog, DespesaFormData } from "./despesa-dialog"
+import { DespesaDialog, DespesaFormData, RecorrenciaFormData } from "./despesa-dialog"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import formatDate from "@/functions/format-date"
 
@@ -76,7 +76,7 @@ export default function GrupoDespesasPage() {
   async function handleConfirmDelete() {
     if (!deleteId) return
 
-    const response = await fetch(`/api/despesas/delete/${deleteId}?group=true`, {
+    const response = await fetch(`/api/transacoes/delete/${deleteId}?group=true`, {
       method: "DELETE",
     })
 
@@ -105,11 +105,11 @@ export default function GrupoDespesasPage() {
   async function handleSubmit(data: DespesaFormData, id?: number) {
     const isEditing = id !== undefined
     const url = isEditing
-      ? "/api/despesas/update?group=true"
-      : "/api/despesas/create?group=true"
+      ? "/api/transacoes/update?group=true"
+      : "/api/transacoes/create?group=true"
     const method = isEditing ? "PUT" : "POST"
 
-    const payload = isEditing ? { id, ...data } : { ...data }
+    const payload = isEditing ? { id, ...data, tipo: "DESPESA" } : { ...data, tipo: "DESPESA" }
 
     const response = await fetch(url, {
       method,
@@ -138,6 +138,32 @@ export default function GrupoDespesasPage() {
     await fetchDespesas().then(setDespesas)
   }
 
+  async function handleSubmitRecorrencia(data: RecorrenciaFormData) {
+    const response = await fetch("/api/recorrencias/create?group=true", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, tipo: "DESPESA" }),
+    })
+
+    if (response.status === 401) {
+      alert("Sessão expirada. Por favor, faça login novamente.")
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+
+      router.push("/")
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || "Erro ao criar recorrência")
+    }
+
+    await fetchDespesas().then(setDespesas)
+  }
+
   async function fetchDespesas(): Promise<Despesa[]> {
     setIsLoading(true)
     try {
@@ -150,7 +176,7 @@ export default function GrupoDespesasPage() {
       const end = formatDate(endDate)
 
       const response = await fetch(
-        `/api/despesas?data_inicio=${start}&data_fim=${end}&group=true`
+        `/api/transacoes?tipo=DESPESA&data_inicio=${start}&data_fim=${end}&group=true`
       )
 
       if (response.status === 401) {
@@ -294,6 +320,7 @@ export default function GrupoDespesasPage() {
                 categorias={categorias}
                 subcategorias={subcategorias}
                 onSubmit={handleSubmit}
+                onSubmitRecorrencia={handleSubmitRecorrencia}
               />
             </div>
           ) : (
@@ -301,8 +328,8 @@ export default function GrupoDespesasPage() {
               <DataTable
                 columns={columns}
                 data={despesas}
-                filterColumn="nome"
-                filterPlaceholder="Filtrar por nome..."
+                filterColumn="descricao"
+                filterPlaceholder="Filtrar por descrição..."
                 onAdd={handleOpenAdd}
                 onEdit={handleOpenEdit}
                 onDelete={handleOpenDelete}
@@ -319,6 +346,7 @@ export default function GrupoDespesasPage() {
                       categorias={categorias}
                       subcategorias={subcategorias}
                       onSubmit={handleSubmit}
+                      onSubmitRecorrencia={handleSubmitRecorrencia}
                     />
                     <ConfirmDialog
                       open={confirmOpen}

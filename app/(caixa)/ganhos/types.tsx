@@ -13,7 +13,12 @@ export type Subcategorias = {
 export type GanhoDetalhe = {
     id_categoria: number
     id_subcategoria: number | null
+    tipo: "RECEITA" | "DESPESA"
+    descricao: string
+    observacao: string | null
     valor: number
-    tipo_transacao: "fixa" | "variavel"
-    data_recebimento: string
+    competencia: string
+    data_vencimento: string | null
+    data_pagamento: string | null
+    status: "PENDENTE" | "PAGO" | "ATRASADO" | "CANCELADO"
 }
